@@ -1,0 +1,14 @@
+name: "YouTube — 2160p (4K) H.264/HEVC, AAC stereo, -14 LUFS"
+description: >
+  YouTube upload recommendation: 3840x2160, H.264 or HEVC, yuv420p, AAC stereo
+  48 kHz, loudness near -14 LUFS (YouTube normalises to about -14). Aspect 16:9.
+requirements:
+  video_codec:    { field: video.codec,   op: in,    expected: [h264, hevc, vp9, av1], severity: warn }
+  width:          { field: video.width,   op: eq,    expected: 3840,               severity: fail }
+  height:         { field: video.height,  op: eq,    expected: 2160,               severity: fail }
+  aspect:         { field: video.dar,      op: in,    expected: ["16:9"],           severity: warn }
+  pix_fmt:        { field: video.pix_fmt,  op: in,    expected: [yuv420p, yuv420p10le], severity: warn }
+  audio_codec:    { field: audio.codec,    op: in,    expected: [aac, opus],        severity: warn }
+  sample_rate:    { field: audio.sample_rate, op: in, expected: [48000],           severity: warn }
+  loudness:       { field: loudness.integrated_lufs, op: range, expected: [-15, -13], severity: warn }
+  true_peak:      { field: loudness.true_peak_dbtp,  op: max,   expected: -1.0,    severity: warn }

@@ -1,0 +1,14 @@
+name: "Broadcast — H.264 1080i25, stereo 48k, -23 LUFS (EBU R128)"
+description: >
+  Generic European broadcast-style delivery: H.264 High in an MXF/MP4, 1080i25,
+  AAC/PCM stereo at 48 kHz, integrated loudness -23 LUFS ±0.5, true peak ≤ -1 dBTP.
+requirements:
+  video_codec:    { field: video.codec,   op: in,    expected: [h264],             severity: fail }
+  width:          { field: video.width,   op: eq,    expected: 1920,               severity: fail }
+  height:         { field: video.height,  op: eq,    expected: 1080,               severity: fail }
+  fps:            { field: video.fps,      op: eq,    expected: 25, tolerance: 0.01, severity: fail }
+  audio_channels: { field: audio.channels, op: eq,   expected: 2,                  severity: fail }
+  sample_rate:    { field: audio.sample_rate, op: eq, expected: 48000,             severity: fail }
+  loudness:       { field: loudness.integrated_lufs, op: range, expected: [-23.5, -22.5], severity: fail }
+  true_peak:      { field: loudness.true_peak_dbtp,  op: max,   expected: -1.0,    severity: fail }
+  lra:            { field: loudness.lra_lu,          op: max,   expected: 20,      severity: warn }

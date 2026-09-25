@@ -1,0 +1,17 @@
+name: "Festival — ProRes 422 HQ, 1080p25, stereo, ~-23 LUFS"
+description: >
+  Common festival screener / DCP-source master: Apple ProRes in a MOV, 1080p25
+  progressive, stereo PCM 48 kHz, EBU R128 loudness around -23 LUFS.
+requirements:
+  container:      { field: container_all, op: in,    expected: [mov, "mov,mp4,m4a,3gp,3g2,mj2"], severity: fail }
+  video_codec:    { field: video.codec,   op: in,    expected: [prores],           severity: fail }
+  width:          { field: video.width,   op: eq,    expected: 1920,               severity: fail }
+  height:         { field: video.height,  op: eq,    expected: 1080,               severity: fail }
+  fps:            { field: video.fps,      op: eq,    expected: 25, tolerance: 0.01, severity: fail }
+  scan:           { field: video.field_order, op: in, expected: [progressive, unknown], severity: warn }
+  pix_fmt:        { field: video.pix_fmt,  op: in,    expected: [yuv422p10le],      severity: warn }
+  audio_codec:    { field: audio.codec,    op: in,    expected: [pcm_s16le, pcm_s24le], severity: fail }
+  audio_channels: { field: audio.channels, op: eq,    expected: 2,                  severity: fail }
+  sample_rate:    { field: audio.sample_rate, op: eq, expected: 48000,             severity: fail }
+  loudness:       { field: loudness.integrated_lufs, op: range, expected: [-24, -22], severity: warn }
+  true_peak:      { field: loudness.true_peak_dbtp,  op: max,   expected: -1.0,    severity: warn }

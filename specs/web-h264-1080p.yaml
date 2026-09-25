@@ -1,0 +1,15 @@
+name: "Web / social — H.264 1080p, AAC stereo, -14 LUFS"
+description: >
+  Web and social delivery: H.264 High in MP4, up to 1080p, yuv420p (broad player
+  support), AAC stereo 48 kHz, loudness around -14 LUFS (platform normalisation
+  target), true peak ≤ -1 dBTP. faststart is recommended (not probed here).
+requirements:
+  container:      { field: container_all, op: in,    expected: ["mov,mp4,m4a,3gp,3g2,mj2", mp4], severity: fail }
+  video_codec:    { field: video.codec,   op: in,    expected: [h264, hevc],       severity: fail }
+  height:         { field: video.height,  op: max,   expected: 1080,               severity: warn }
+  pix_fmt:        { field: video.pix_fmt,  op: in,    expected: [yuv420p],          severity: fail }
+  audio_codec:    { field: audio.codec,    op: in,    expected: [aac],              severity: fail }
+  audio_channels: { field: audio.channels, op: eq,    expected: 2,                 severity: warn }
+  sample_rate:    { field: audio.sample_rate, op: in, expected: [44100, 48000],    severity: warn }
+  loudness:       { field: loudness.integrated_lufs, op: range, expected: [-16, -13], severity: warn }
+  true_peak:      { field: loudness.true_peak_dbtp,  op: max,   expected: -1.0,    severity: warn }
