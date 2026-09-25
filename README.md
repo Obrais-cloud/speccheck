@@ -87,7 +87,8 @@ requirements:
   loudness:    { field: loudness.integrated_lufs, op: range, expected: [-24, -22], severity: warn }
 ```
 
-- **fields** (dotted): `container_all`, `duration`, `bitrate_kbps`,
+- **fields** (dotted): `container_all`, `duration`, `bitrate_kbps`, `faststart`
+  (mp4/mov moov-atom before mdat — streaming-friendly),
   `video.{codec,profile,width,height,fps,pix_fmt,field_order,dar,sar,bit_depth,color_*}`,
   `audio.{codec,channels,sample_rate,bit_depth,channel_layout}`,
   `loudness.{integrated_lufs,true_peak_dbtp,lra_lu}`.

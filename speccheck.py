@@ -91,6 +91,9 @@ def probe(path: str) -> dict:
         "n_video_streams": sum(1 for s in streams if s.get("codec_type") == "video"),
         "n_audio_streams": sum(1 for s in streams if s.get("codec_type") == "audio"),
     }
+    ca = data["container_all"] or ""
+    if "mp4" in ca or "mov" in ca:
+        data["faststart"] = mp4_faststart(path)
     if v:
         data["video"] = {
             "codec": v.get("codec_name"),
@@ -116,6 +119,43 @@ def probe(path: str) -> dict:
             "bit_depth": _num(a.get("bits_per_raw_sample")) or _num(a.get("bits_per_sample")),
         }
     return data
+
+
+def mp4_faststart(path: str) -> bool | None:
+    """True if the MP4/MOV `moov` atom sits before `mdat` (streaming/progressive
+    download friendly). None for non-MP4 files or if the box order can't be read.
+    Reads only the top-level box headers, no ffmpeg needed."""
+    order = []
+    try:
+        with open(path, "rb") as f:
+            size_bytes = os.fstat(f.fileno()).st_size
+            while f.tell() < size_bytes:
+                header = f.read(8)
+                if len(header) < 8:
+                    break
+                size = int.from_bytes(header[:4], "big")
+                btype = header[4:8].decode("latin-1")
+                if size == 1:                      # 64-bit largesize
+                    size = int.from_bytes(f.read(8), "big")
+                    body = size - 16
+                elif size == 0:                    # extends to EOF
+                    order.append(btype)
+                    break
+                else:
+                    body = size - 8
+                order.append(btype)
+                if "moov" in order and "mdat" in order:
+                    break
+                if body < 0:
+                    return None
+                f.seek(body, os.SEEK_CUR)
+    except OSError:
+        return None
+    if "ftyp" not in order and "moov" not in order:
+        return None  # not an ISO-BMFF (mp4/mov) file
+    if "moov" not in order or "mdat" not in order:
+        return None
+    return order.index("moov") < order.index("mdat")
 
 
 _LOUD_RE = {

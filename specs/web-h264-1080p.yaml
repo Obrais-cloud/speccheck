@@ -5,6 +5,7 @@ description: >
   target), true peak ≤ -1 dBTP. faststart is recommended (not probed here).
 requirements:
   container:      { field: container_all, op: in,    expected: ["mov,mp4,m4a,3gp,3g2,mj2", mp4], severity: fail }
+  faststart:      { field: faststart,     op: eq,    expected: true,               severity: warn }
   video_codec:    { field: video.codec,   op: in,    expected: [h264, hevc],       severity: fail }
   height:         { field: video.height,  op: max,   expected: 1080,               severity: warn }
   pix_fmt:        { field: video.pix_fmt,  op: in,    expected: [yuv420p],          severity: fail }

@@ -95,6 +95,18 @@ class Presets(unittest.TestCase):
                               {"eq", "in", "range", "min", "max"}, f"{p.name}:{name}")
 
 
+class Faststart(unittest.TestCase):
+    def test_detection(self):
+        s = HERE / "samples"
+        if not (s / "web-ok.mp4").exists() or not (s / "bad.mp4").exists():
+            self.skipTest("run ./gen-samples.sh first")
+        self.assertIs(sc.mp4_faststart(str(s / "web-ok.mp4")), True)
+        self.assertIs(sc.mp4_faststart(str(s / "bad.mp4")), False)
+
+    def test_non_mp4_is_none(self):
+        self.assertIsNone(sc.mp4_faststart(str(HERE / "speccheck.py")))  # not ISO-BMFF
+
+
 class CliSmoke(unittest.TestCase):
     """End-to-end against the generated sample, only if it exists + ffprobe present."""
     def test_good_sample_passes(self):
