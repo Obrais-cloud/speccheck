@@ -1,0 +1,32 @@
+name: "Fillos do Vento: A Rapa — TV version (52 min), 1080/25 ProRes 422 HQ, EBU R128 -23"
+description: >
+  European broadcast master for the 52-min TV cut. There is no TV export on the
+  project drive to probe, so this combines the film's real finishing format
+  (probed: 1920x1080, 10-bit yuv422p10le, Rec.709, ProRes, PCM 48k) with the
+  European broadcast delivery standard: 1080 at 25 fps (PAL — the TV cut is
+  standards-converted from the 23.976 feature), ProRes 422 HQ, stereo + optional
+  5.1, and MANDATORY EBU R128 loudness -23 LUFS (±1) with true peak <= -1 dBTP.
+
+  Unlike a festival file, broadcast loudness and frame rate are HARD fails: a TV
+  channel rejects anything off R128 or not at 25 fps. Confirm the specific
+  broadcaster's codec/container — TVG/RTVE/ARTE etc. may require XDCAM HD422 or
+  AVC-Intra in MXF instead of ProRes; copy this preset and change codec/container
+  if so. Running the 23.976 feature master through this spec will (correctly)
+  FAIL on frame rate — that is the point: the feature master is not TV-ready.
+requirements:
+  container:      { field: container_all, op: in,    expected: [mov, "mov,mp4,m4a,3gp,3g2,mj2"], severity: warn }
+  video_codec:    { field: video.codec,   op: in,    expected: [prores],           severity: fail }
+  prores_profile: { field: video.profile, op: in,    expected: ["HQ", "422 HQ"],   severity: warn }
+  width:          { field: video.width,   op: eq,    expected: 1920,               severity: fail }
+  height:         { field: video.height,  op: eq,    expected: 1080,               severity: fail }
+  fps:            { field: video.fps,      op: eq,    expected: 25, tolerance: 0.01, severity: fail }
+  scan:           { field: video.field_order, op: in, expected: [progressive, tt, bb, unknown], severity: warn }
+  pix_fmt:        { field: video.pix_fmt,  op: in,    expected: [yuv422p10le],      severity: warn }
+  bit_depth:      { field: video.bit_depth, op: eq,   expected: 10,                severity: warn }
+  color:          { field: video.color_primaries, op: in, expected: [bt709, unknown], severity: warn }
+  audio_codec:    { field: audio.codec,    op: in,    expected: [pcm_s16le, pcm_s24le], severity: fail }
+  audio_channels: { field: audio.channels, op: in,    expected: [2, 6],             severity: warn }
+  sample_rate:    { field: audio.sample_rate, op: eq, expected: 48000,             severity: fail }
+  loudness:       { field: loudness.integrated_lufs, op: range, expected: [-24, -22], severity: fail }
+  true_peak:      { field: loudness.true_peak_dbtp,  op: max,   expected: -1.0,    severity: fail }
+  lra:            { field: loudness.lra_lu,          op: max,   expected: 20,      severity: warn }
