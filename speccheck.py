@@ -278,6 +278,91 @@ def report(path: str, spec: dict, results: list[dict]) -> int:
     return 1 if fails else 0
 
 
+VIDEO_EXTS = {".mov", ".mp4", ".mxf", ".m4v", ".mkv", ".avi", ".webm", ".mts", ".m2ts"}
+
+
+def find_videos(folder: Path) -> list[Path]:
+    return sorted(p for p in folder.rglob("*")
+                  if p.is_file() and p.suffix.lower() in VIDEO_EXTS
+                  and not p.name.startswith("._"))
+
+
+def all_specs() -> list[tuple[str, dict]]:
+    out = []
+    for p in sorted(SPECS_DIR.glob("*.yaml")):
+        try:
+            s = yaml.safe_load(p.read_text())
+            if isinstance(s, dict) and "requirements" in s:
+                out.append((p.stem, s))
+        except Exception:
+            pass
+    return out
+
+
+def _drop_loudness(spec: dict) -> dict:
+    return {**spec, "requirements": {
+        k: v for k, v in (spec.get("requirements") or {}).items()
+        if not str(v.get("field", "")).startswith("loudness.")}}
+
+
+def evaluate_file(path: Path, specs: list[tuple[str, dict]], no_loudness: bool) -> list[dict]:
+    """Probe `path` once and score it against every (name, spec)."""
+    data = probe(str(path))
+    wants_loud = (not no_loudness) and any(
+        str(r.get("field", "")).startswith("loudness.")
+        for _, s in specs for r in (s.get("requirements") or {}).values())
+    if wants_loud:
+        data["loudness"] = measure_loudness(str(path))
+    rows = []
+    for name, spec in specs:
+        results = check(data, _drop_loudness(spec) if no_loudness else spec)
+        rows.append({
+            "spec": name,
+            "fails": sum(1 for r in results if r["status"] == "FAIL"),
+            "warns": sum(1 for r in results if r["status"] == "WARN"),
+            "n": len(results),
+        })
+    return rows
+
+
+def report_matrix(targets: list[Path], specs: list[tuple[str, dict]], no_loudness: bool,
+                  as_json: bool) -> int:
+    """For each file, which spec(s) it satisfies. Exit 1 if any file matches none."""
+    payload = {}
+    unmatched = 0
+    for path in targets:
+        try:
+            rows = evaluate_file(path, specs, no_loudness)
+        except RuntimeError as e:
+            print(_c(BOLD, os.path.basename(str(path))))
+            print(f"  {_c(RED, 'could not probe')}: {e}\n")
+            unmatched += 1
+            payload[str(path)] = {"error": str(e)}
+            continue
+        passing = sorted((r for r in rows if r["fails"] == 0), key=lambda r: r["warns"])
+        payload[str(path)] = {"passes": [r["spec"] for r in passing], "rows": rows}
+        if as_json:
+            continue
+        print(_c(BOLD, os.path.basename(str(path))))
+        if passing:
+            for r in passing:
+                tag = _c(GREEN, "✓ clean") if r["warns"] == 0 else _c(YELLOW, f"⚠ {r['warns']} warn")
+                print(f"  {tag}  {r['spec']}")
+        else:
+            unmatched += 1
+            closest = min(rows, key=lambda r: r["fails"])
+            print(f"  {_c(RED, '✗ matches no spec')}   closest: {closest['spec']} ({closest['fails']} fail)")
+        print()
+
+    if as_json:
+        print(json.dumps({"matched": unmatched == 0, "files": payload}, indent=2, default=str))
+    else:
+        n = len(targets)
+        print(_c(BOLD, f"{n - unmatched}/{n} file(s) match at least one spec"
+                       + (f"  ·  {unmatched} unmatched" if unmatched else "")))
+    return 1 if unmatched else 0
+
+
 def load_spec(ref: str) -> dict:
     p = Path(ref)
     if not p.exists():
@@ -309,6 +394,8 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("video", nargs="?", help="video file to check")
     ap.add_argument("--spec", help="preset name (see --list-specs) or path to a .yaml")
+    ap.add_argument("--all", action="store_true",
+                    help="check the file/folder against EVERY bundled spec (which target it's valid for)")
     ap.add_argument("--from-brief", metavar="TEXT",
                     help="compile a free-text spec via a local Ollama model")
     ap.add_argument("--no-loudness", action="store_true",
@@ -321,13 +408,35 @@ def main() -> int:
         list_specs()
         return 0
     if not args.video:
-        ap.error("a video file is required (or use --list-specs)")
-    if not Path(args.video).exists():
-        sys.exit(f"no such file: {args.video}")
-    if not args.spec and not args.from_brief:
-        ap.error("give a spec with --spec or --from-brief")
+        ap.error("a video file or folder is required (or use --list-specs)")
+    target = Path(args.video)
+    if not target.exists():
+        sys.exit(f"no such file or folder: {args.video}")
+    if not args.spec and not args.from_brief and not args.all:
+        ap.error("give a spec with --spec, or --all, or --from-brief")
 
-    spec = spec_from_brief(args.from_brief) if args.from_brief else load_spec(args.spec)
+    # Resolve the file(s) to check.
+    if target.is_dir():
+        targets = find_videos(target)
+        if not targets:
+            sys.exit(f"no video files found under {target}")
+    else:
+        targets = [target]
+
+    # Resolve the spec(s) to check against.
+    if args.all:
+        specs = all_specs()
+    elif args.from_brief:
+        specs = [("from-brief", spec_from_brief(args.from_brief))]
+    else:
+        specs = [(args.spec, load_spec(args.spec))]
+
+    # Folder, --all, or multiple specs → the compact "which spec(s) it matches" view.
+    if len(targets) > 1 or len(specs) > 1 or target.is_dir():
+        return report_matrix(targets, specs, args.no_loudness, args.json)
+
+    # Single file + single spec → the detailed per-requirement report (unchanged).
+    spec = specs[0][1]
 
     if args.no_loudness:
         spec = {**spec, "requirements": {

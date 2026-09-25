@@ -50,6 +50,34 @@ violated, so:
 speccheck out.mov --spec broadcast-h264-1080i25 && aws s3 cp out.mov s3://...
 ```
 
+### Validate a whole delivery folder
+
+Point `speccheck` at a folder with `--all` and it checks every video against
+every bundled spec, telling you which delivery target each file is valid for (and
+flagging any that match none):
+
+```bash
+speccheck ./04_DELIVERABLES --all --no-loudness
+```
+```
+feature_master.mov
+  ⚠ 1 warn  fillos-do-vento-dcp-source
+tv_master.mov
+  ✓ clean  fillos-do-vento-tv
+front_wall.mov
+  ✓ clean  fillos-do-vento-installation
+vr.mp4
+  ✓ clean  fillos-do-vento-vr
+screener.mp4
+  ✓ clean  filmfreeway-screener
+  ✓ clean  web-h264-1080p
+
+6/6 file(s) match at least one spec
+```
+
+`--all` also works on a single file ("which of my specs does this satisfy?"), and
+exits non-zero if any file matches no spec. Add `--json` for a machine-readable map.
+
 ### Example
 
 ```

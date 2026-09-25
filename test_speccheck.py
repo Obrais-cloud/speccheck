@@ -107,6 +107,38 @@ class Faststart(unittest.TestCase):
         self.assertIsNone(sc.mp4_faststart(str(HERE / "speccheck.py")))  # not ISO-BMFF
 
 
+class SpecAll(unittest.TestCase):
+    def test_find_videos_and_all_specs(self):
+        vids = sc.find_videos(HERE / "samples")
+        if not vids:
+            self.skipTest("run ./gen-samples.sh first")
+        self.assertTrue(all(v.suffix.lower() in sc.VIDEO_EXTS for v in vids))
+        self.assertFalse(any(v.name.startswith("._") for v in vids))
+        specs = sc.all_specs()
+        self.assertGreaterEqual(len(specs), 4)
+        self.assertTrue(all("requirements" in s for _, s in specs))
+
+    def test_evaluate_file_against_all(self):
+        sample = HERE / "samples" / "web-ok.mp4"
+        if not sample.exists() or subprocess.run(["which", "ffprobe"],
+                                                 capture_output=True).returncode != 0:
+            self.skipTest("no sample or ffprobe")
+        rows = sc.evaluate_file(sample, sc.all_specs(), no_loudness=True)
+        self.assertEqual(len(rows), len(sc.all_specs()))
+        # a clean 1080p H.264 clip should satisfy at least one spec with no fails
+        self.assertTrue(any(r["fails"] == 0 for r in rows))
+
+    def test_all_cli_on_folder(self):
+        folder = HERE / "samples"
+        if not sc.find_videos(folder) or subprocess.run(["which", "ffprobe"],
+                                                        capture_output=True).returncode != 0:
+            self.skipTest("no samples or ffprobe")
+        r = subprocess.run([sys.executable, str(HERE / "speccheck.py"), str(folder),
+                            "--all", "--no-loudness"], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("match at least one spec", r.stdout)
+
+
 class CliSmoke(unittest.TestCase):
     """End-to-end against the generated sample, only if it exists + ffprobe present."""
     def test_good_sample_passes(self):
