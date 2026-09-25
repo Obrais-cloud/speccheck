@@ -1,0 +1,31 @@
+name: "Fillos do Vento: A Rapa — feature DCP-source master (ProRes, 1080p 23.976, 2.39 scope)"
+description: >
+  The ProRes master a DCP is built from for the 82-min feature of *Fillos do
+  Vento: A Rapa*. Derived from the film's ACTUAL finishing files on the project
+  drive (teaser + immersive + VR exports): ProRes 422 in MOV, 1920x1080, 23.976
+  fps (24000/1001), 10-bit yuv422p10le, Rec.709, progressive, PCM 48 kHz stereo,
+  picture in 2.39:1 scope (letterboxed in the 16:9 raster). Deliverable masters
+  should be 422 HQ or 4444, so a lower ProRes profile is flagged.
+
+  DCP notes (a DCP is a package speccheck can't validate — this checks the
+  source): the 23.976 master is conformed to 24.000 for a standard DCP (or
+  delivered as a 23.976 DCP where the server supports it); a 2K DCP upscales
+  1920x1080 to 2048-wide scope (2048x858). Cinema loudness is set by reference
+  level, not EBU R128, so loudness here is a soft flag only.
+requirements:
+  container:      { field: container_all, op: in,    expected: [mov, "mov,mp4,m4a,3gp,3g2,mj2"], severity: fail }
+  video_codec:    { field: video.codec,   op: in,    expected: [prores],           severity: fail }
+  prores_profile: { field: video.profile, op: in,    expected: ["HQ", "422 HQ", "4444", "4444 XQ"], severity: warn }
+  width:          { field: video.width,   op: eq,    expected: 1920,               severity: fail }
+  height:         { field: video.height,  op: eq,    expected: 1080,               severity: fail }
+  aspect:         { field: video.dar,      op: in,    expected: ["16:9"],           severity: warn }
+  fps:            { field: video.fps,      op: eq,    expected: 23.976, tolerance: 0.01, severity: fail }
+  scan:           { field: video.field_order, op: in, expected: [progressive],     severity: fail }
+  pix_fmt:        { field: video.pix_fmt,  op: in,    expected: [yuv422p10le, yuv444p10le], severity: warn }
+  bit_depth:      { field: video.bit_depth, op: eq,   expected: 10,                severity: warn }
+  color:          { field: video.color_primaries, op: in, expected: [bt709, unknown], severity: warn }
+  audio_codec:    { field: audio.codec,    op: in,    expected: [pcm_s16le, pcm_s24le], severity: fail }
+  audio_channels: { field: audio.channels, op: in,    expected: [2, 6],             severity: warn }
+  sample_rate:    { field: audio.sample_rate, op: eq, expected: 48000,             severity: fail }
+  loudness:       { field: loudness.integrated_lufs, op: range, expected: [-25, -21], severity: warn }
+  true_peak:      { field: loudness.true_peak_dbtp,  op: max,   expected: -1.0,    severity: warn }
