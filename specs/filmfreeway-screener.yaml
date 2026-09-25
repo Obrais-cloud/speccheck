@@ -1,0 +1,19 @@
+name: "FilmFreeway screener — H.264 MP4, ≤1080p, AAC stereo (submission upload)"
+description: >
+  The online screener you upload to submit through FilmFreeway — the path for
+  essentially every festival in this catalogue (IDFA, Sundance, SXSW,
+  Thessaloniki Doc, DocsBarcelona, San Sebastián, Visions du Réel…). Per
+  FilmFreeway's own recommendation: H.264 in MP4, max height 1080, ~4500 kbps
+  video, AAC stereo 256 kbps, aspect preserved (accepts full-quality up to 20 GB,
+  so bitrate is a soft target, not a wall). FilmFreeway does not normalise
+  loudness, so none is enforced here. Source in the repo README.
+requirements:
+  container:     { field: container_all, op: in,  expected: ["mov,mp4,m4a,3gp,3g2,mj2", mp4], severity: fail }
+  video_codec:   { field: video.codec,   op: in,  expected: [h264],            severity: fail }
+  height:        { field: video.height,  op: max, expected: 1080,              severity: warn }
+  pix_fmt:       { field: video.pix_fmt, op: in,  expected: [yuv420p],         severity: fail }
+  faststart:     { field: faststart,     op: eq,  expected: true,             severity: warn }
+  video_bitrate: { field: bitrate_kbps,  op: max, expected: 12000,            severity: warn }
+  audio_codec:   { field: audio.codec,   op: in,  expected: [aac],            severity: fail }
+  audio_channels: { field: audio.channels, op: eq, expected: 2,               severity: warn }
+  sample_rate:   { field: audio.sample_rate, op: in, expected: [44100, 48000], severity: warn }

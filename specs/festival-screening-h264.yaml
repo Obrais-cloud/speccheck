@@ -1,0 +1,21 @@
+name: "Festival screening copy — H.264 MP4 1080p, 48k audio (EU best practice)"
+description: >
+  A digital screening file for festivals/cinemas that accept H.264 (not a DCP):
+  H.264 in MP4, 1080p, up to ~20 Mbps, audio 48 kHz (AAC or PCM), faststart. Per
+  the EU "digital screening copies" best practice (shortfilm.de). No single LUFS
+  standard exists for festival files, so loudness is only flagged (soft target
+  around -23 LUFS, common for EU broadcast-adjacent delivery) — confirm each
+  festival's tech sheet. Source in the repo README.
+requirements:
+  container:     { field: container_all, op: in,  expected: ["mov,mp4,m4a,3gp,3g2,mj2", mp4], severity: fail }
+  video_codec:   { field: video.codec,   op: in,  expected: [h264, hevc],      severity: fail }
+  width:         { field: video.width,   op: eq,  expected: 1920,             severity: warn }
+  height:        { field: video.height,  op: eq,  expected: 1080,             severity: warn }
+  pix_fmt:       { field: video.pix_fmt, op: in,  expected: [yuv420p],        severity: warn }
+  faststart:     { field: faststart,     op: eq,  expected: true,            severity: warn }
+  video_bitrate: { field: bitrate_kbps,  op: max, expected: 20000,           severity: warn }
+  audio_codec:   { field: audio.codec,   op: in,  expected: [aac, pcm_s16le, pcm_s24le], severity: fail }
+  audio_channels: { field: audio.channels, op: eq, expected: 2,              severity: warn }
+  sample_rate:   { field: audio.sample_rate, op: eq, expected: 48000,       severity: fail }
+  loudness:      { field: loudness.integrated_lufs, op: range, expected: [-24, -22], severity: warn }
+  true_peak:     { field: loudness.true_peak_dbtp,  op: max,   expected: -1.0, severity: warn }

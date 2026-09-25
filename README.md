@@ -67,14 +67,30 @@ spec: Festival — ProRes 422 HQ, 1080p25, stereo, ~-23 LUFS
 
 ## Bundled specs
 
+Grounded in the real delivery paths documentary/festival work actually uses —
+sources below.
+
 | preset | for |
 |---|---|
-| `festival-prores` | ProRes 422 HQ, 1080p25, stereo PCM 48k, ~-23 LUFS |
-| `broadcast-h264-1080i25` | European broadcast-style H.264 1080i25, -23 LUFS ±0.5, TP ≤ -1 |
-| `web-h264-1080p` | Web/social H.264 MP4, yuv420p, AAC stereo, ~-14 LUFS |
+| `filmfreeway-screener` | **Submission upload** — the online screener you send through FilmFreeway (H.264 MP4, ≤1080p, AAC stereo). The path for IDFA, Sundance, SXSW, Thessaloniki Doc, DocsBarcelona, San Sebastián, Visions du Réel… |
+| `festival-screening-h264` | Digital screening copy for festivals/cinemas that take H.264 (1080p, ≤20 Mbps, 48k, faststart) |
+| `festival-prores` | Exhibition / DCP-source master — ProRes 422 HQ, 1080p**25** (European), Rec709, PCM 48k |
+| `festival-prores-24p` | Same master at **24 fps** (DCP standard / international) |
+| `broadcast-h264-1080i25` | European broadcast H.264 1080i25, -23 LUFS ±0.5, TP ≤ -1 |
+| `web-h264-1080p` | Web/social H.264 MP4, yuv420p, AAC stereo, ~-14 LUFS, faststart |
 | `youtube-4k` | YouTube 2160p H.264/HEVC, AAC stereo, ~-14 LUFS |
 
-Presets are just YAML — copy one and tune it for a specific festival or client.
+**Two honest caveats built into these presets:**
+
+- **DCP is a package, not a file.** A Digital Cinema Package is a folder of MXF
+  (JPEG 2000) + XML, so `speccheck` can't validate it directly — it validates the
+  **ProRes master you make the DCP from** (`festival-prores` / `-24p`).
+- **There is no single festival loudness standard.** FilmFreeway doesn't normalise,
+  and cinema uses reference level, not EBU R128 — so loudness is a **warning**, not
+  a hard fail. Confirm each festival's own tech sheet.
+
+For a **specific festival's sheet**, copy the closest preset and change the
+numbers, or paste the sheet into `--from-brief`. Presets are just YAML.
 
 ## Writing a spec
 
@@ -118,6 +134,20 @@ reachable it tells you and you fall back to a preset — the core never needs it
   treat `unknown` as acceptable for a progressive requirement.
 - `samples/` holds ffmpeg-generated test clips (gitignored); regenerate with the
   commands in the tests / this README.
+
+## Sources
+
+The bundled festival/screener presets are grounded in these (checked Sep 2026;
+festival tech sheets change per edition — always confirm the current one):
+
+- FilmFreeway — recommended video upload format (H.264 MP4, ≤1080p, AAC stereo):
+  <https://filmfreeway.com/help/article/16013/what-format-do-you-recommend-for-video-uploads>
+- shortfilm.de — best practice for digital screening copies for festivals/cinemas:
+  <https://www.shortfilm.de/en/best-practice-digitale-vorfuehrkopien-fuer-festivals-und-kinos/>
+- Filmmaker Magazine — how to deliver your film to a festival (DCP / ProRes 422 HQ):
+  <https://filmmakermagazine.com/96184-how-to-deliver-your-film-to-a-festival/>
+- Berlinale — technical specifications for festival media (reference for tier festivals):
+  <https://www.berlinale.de/en/film-entry/technical-specifications/festival-media.html>
 
 ## Test
 

@@ -1,17 +1,17 @@
-name: "Festival exhibition master — ProRes 422 HQ, 1080p25, Rec709, 48k/24-bit"
+name: "Festival exhibition master (24p) — ProRes 422 HQ, 1080p24, Rec709, 48k"
 description: >
-  The exhibition / DCP-source master many festivals request when they can't take
-  a DCP: Apple ProRes 422 HQ in a MOV, 1080p, 25 fps (European rate — use
-  festival-prores-24p for 24 fps / international), Rec.709, PCM 48 kHz stereo. No
-  uniform festival LUFS standard exists, so loudness is flagged around -23 LUFS,
-  not failed — confirm the festival's tech sheet. Sources in the repo README.
+  International / DCP-source variant of the ProRes exhibition master at 24 fps
+  (DCP standard, most non-European cinema delivery). ProRes 422 HQ MOV, 1080p24,
+  Rec.709, PCM 48 kHz stereo. For 2K/4K masters bump width/height (2048x1080,
+  3840x2160). Loudness flagged, not failed — confirm the festival's tech sheet.
+  Sources in the repo README.
 requirements:
   container:      { field: container_all, op: in,    expected: [mov, "mov,mp4,m4a,3gp,3g2,mj2"], severity: fail }
   video_codec:    { field: video.codec,   op: in,    expected: [prores],           severity: fail }
   prores_profile: { field: video.profile, op: in,    expected: ["HQ", "422 HQ"],   severity: warn }
   width:          { field: video.width,   op: eq,    expected: 1920,               severity: fail }
   height:         { field: video.height,  op: eq,    expected: 1080,               severity: fail }
-  fps:            { field: video.fps,      op: eq,    expected: 25, tolerance: 0.01, severity: fail }
+  fps:            { field: video.fps,      op: eq,    expected: 24, tolerance: 0.01, severity: fail }
   scan:           { field: video.field_order, op: in, expected: [progressive, unknown], severity: warn }
   pix_fmt:        { field: video.pix_fmt,  op: in,    expected: [yuv422p10le],      severity: warn }
   color:          { field: video.color_primaries, op: in, expected: [bt709, unknown], severity: warn }
