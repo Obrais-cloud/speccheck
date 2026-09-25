@@ -74,6 +74,8 @@ sources below.
 |---|---|
 | `fillos-do-vento-dcp-source` | **Project-specific** — the ProRes DCP-source master for the *Fillos do Vento: A Rapa* feature, derived from the film's actual finishing files (1920×1080, 23.976, 2.39 scope, 10-bit Rec.709, PCM 48k). Validated against the real master. |
 | `fillos-do-vento-tv` | **Project-specific** — the 52-min TV broadcast master (1080/**25**, ProRes 422 HQ, EBU **R128 -23 LUFS** and TP ≤ -1 as hard fails). The feature's 23.976 master correctly fails frame rate here — it's not TV-ready. |
+| `fillos-do-vento-installation` | **Project-specific** — the gallery installation front-wall master (ProRes 422 LT, 10200×1200 17:2, 10-bit Rec.709, 23.976; video-only, sound is separate). Validated against the real export. |
+| `fillos-do-vento-vr` | **Project-specific** — the 31-min VR/immersive panorama master (HEVC Main 10, 7344×864 17:2, 10-bit Rec.709, 23.976; video-only, spatial audio separate). Validated against the real export. |
 | `filmfreeway-screener` | **Submission upload** — the online screener you send through FilmFreeway (H.264 MP4, ≤1080p, AAC stereo). The path for IDFA, Sundance, SXSW, Thessaloniki Doc, DocsBarcelona, San Sebastián, Visions du Réel… |
 | `festival-screening-h264` | Digital screening copy for festivals/cinemas that take H.264 (1080p, ≤20 Mbps, 48k, faststart) |
 | `festival-prores` | Exhibition / DCP-source master — ProRes 422 HQ, 1080p**25** (European), Rec709, PCM 48k |

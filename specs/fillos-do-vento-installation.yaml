@@ -1,0 +1,23 @@
+name: "Fillos do Vento: A Rapa — installation front wall, ProRes 422 LT 10200x1200 @23.976"
+description: >
+  Playback master for the gallery installation's FRONT WALL, derived from the
+  real export on the project drive: ProRes 422 LT in MOV, 10200x1200 (17:2,
+  ultra-wide multi-projector/LED wall), 10-bit yuv422p10le, Rec.709, 23.976 fps.
+  Video-only — installation sound is a separate spatial/multichannel feed in the
+  venue, so no audio or loudness is checked here.
+
+  ProRes 422 LT (not HQ) is deliberate: it plays back in real time on a media
+  server at this pixel count. A multi-wall piece has one file per surface — copy
+  this preset and change width/height (and it is the front wall's 17:2 raster,
+  not a 16:9 or 2.39 frame). Confirm the venue's exact canvas and server codec.
+requirements:
+  container:      { field: container_all, op: in,    expected: [mov, "mov,mp4,m4a,3gp,3g2,mj2"], severity: fail }
+  video_codec:    { field: video.codec,   op: in,    expected: [prores],           severity: fail }
+  prores_profile: { field: video.profile, op: in,    expected: ["LT", "Standard", "HQ"], severity: warn }
+  width:          { field: video.width,   op: eq,    expected: 10200,              severity: fail }
+  height:         { field: video.height,  op: eq,    expected: 1200,              severity: fail }
+  aspect:         { field: video.dar,      op: in,    expected: ["17:2"],           severity: warn }
+  fps:            { field: video.fps,      op: eq,    expected: 23.976, tolerance: 0.01, severity: fail }
+  pix_fmt:        { field: video.pix_fmt,  op: in,    expected: [yuv422p10le],      severity: warn }
+  bit_depth:      { field: video.bit_depth, op: eq,   expected: 10,                severity: warn }
+  color:          { field: video.color_primaries, op: in, expected: [bt709, unknown], severity: warn }

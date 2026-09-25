@@ -1,0 +1,22 @@
+name: "Fillos do Vento: A Rapa — VR / immersive panorama, HEVC Main 10 7344x864 @23.976"
+description: >
+  Master for the 31-min VR / immersive panoramic piece (Cannes 2025 Immersive
+  Competition), derived from the real export on the project drive: HEVC (Main 10,
+  10-bit) in MP4, 7344x864 (17:2 ultra-wide wrap-around panorama — not a 2:1
+  headset 360 equirect), yuv420p10le, Rec.709, 23.976 fps, ~17 Mbps. Video-only:
+  immersive audio is a separate spatial feed, so no audio or loudness is checked.
+
+  HEVC 10-bit is used here (not ProRes) to keep the high pixel count playable.
+  If a specific headset/platform build is needed instead (e.g. 360 equirect at
+  2:1, or per-eye stereoscopic), that is a different master — copy this preset and
+  change codec/resolution/aspect to the target's spec.
+requirements:
+  container:      { field: container_all, op: in,    expected: ["mov,mp4,m4a,3gp,3g2,mj2", mp4], severity: fail }
+  video_codec:    { field: video.codec,   op: in,    expected: [hevc],             severity: fail }
+  profile:        { field: video.profile, op: in,    expected: ["Main 10", "Rext"], severity: warn }
+  width:          { field: video.width,   op: eq,    expected: 7344,               severity: fail }
+  height:         { field: video.height,  op: eq,    expected: 864,               severity: fail }
+  aspect:         { field: video.dar,      op: in,    expected: ["17:2"],           severity: warn }
+  fps:            { field: video.fps,      op: eq,    expected: 23.976, tolerance: 0.01, severity: fail }
+  pix_fmt:        { field: video.pix_fmt,  op: in,    expected: [yuv420p10le],      severity: fail }
+  color:          { field: video.color_primaries, op: in, expected: [bt709, unknown], severity: warn }
